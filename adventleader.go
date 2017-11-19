@@ -156,6 +156,9 @@ func MainLoop(config Configuration, lastUpdate time.Time) time.Time {
 		message += " 1. **" + name + "**"
 		message += " 📈 _" + strconv.Itoa(ids[k].LocalScore) + "_"
 		message += " ⭐ _" + strconv.Itoa(ids[k].Stars) + "_"
+		if ids[k].GlobalScore > 0 {
+			message += " (🌍 _" + strconv.Itoa(ids[k].Stars) + "_!)"
+		}
 		message += "\n"
 	}
 	if debug {
