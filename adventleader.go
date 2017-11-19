@@ -1,4 +1,4 @@
-package adventleader
+package main
 
 import (
 	"bytes"
