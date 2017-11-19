@@ -1,4 +1,4 @@
-package main
+package adventleader
 
 import (
 	"bytes"
@@ -16,6 +16,7 @@ import (
 const debug bool = true
 const timeLayout = "2006-01-02T15:04:05-0700"
 
+// Defines the struct for use with the JSON config file.
 type Configuration struct {
 	URL      string
 	Cookie   string
