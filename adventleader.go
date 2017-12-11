@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-const debug bool = false
+const debug bool = true
 const timeLayout = "2006-01-02T15:04:05-0700"
 
 // Defines the struct for use with the JSON config file.
@@ -57,6 +57,20 @@ type Member struct {
 
 type Level struct {
 	Timestamp JSONTime `json:"get_star_ts"`
+}
+
+type SortedMembers []Member
+
+func (m SortedMembers) Len() int      { return len(m) }
+func (m SortedMembers) Swap(i, j int) { m[i], m[j] = m[j], m[i] }
+func (m SortedMembers) Less(i, j int) bool {
+	if m[i].LocalScore < m[j].LocalScore {
+		return true
+	}
+	if m[i].LocalScore > m[j].LocalScore {
+		return false
+	}
+	return m[i].Stars < m[j].Stars
 }
 
 // Uses the URL and cookie to retrieve a Leaderboad struct
@@ -127,38 +141,34 @@ func MainLoop(config Configuration, lastUpdate time.Time) time.Time {
 
 	// Create a slice of ints and a map with values/keys
 	// based on the local score of the Members
-	var keys []int
 	var lastStar time.Time
-	ids := make(map[int]*Member)
+	var members []Member
 
 	for _, member := range leaderboard.Members {
-		member := member
-		keys = append(keys, member.LocalScore)
-		ids[member.LocalScore] = &member
+		members = append(members, member)
 		memberStarTime := JSONtoNormalTime(member.LastStarTS)
 		if memberStarTime.After(lastStar) {
 			lastStar = memberStarTime
 		}
 	}
 
-	// Sort the slice of Ints in reverse order
-	sort.Sort(sort.Reverse(sort.IntSlice(keys)))
+	sort.Sort(sort.Reverse(SortedMembers(members)))
 
 	message := "### Leaderboard 🎄\n\n---\n"
 	// Create message with list of Members sorted by Local Score
-	for _, k := range keys {
+	for _, m := range members {
 		var name string
-		if ids[k].Name == "" {
-			name = ids[k].ID
+		if m.Name == "" {
+			name = m.ID
 		} else {
-			name = ids[k].Name
+			name = m.Name
 		}
-		if ids[k].Stars > 0 {
+		if m.Stars > 0 {
 			message += fmt.Sprintf(" 1. **%s**  📈 _%d_ ⭐ _%d_",
-				name, ids[k].LocalScore, ids[k].Stars)
+				name, m.LocalScore, m.Stars)
 		}
-		if ids[k].GlobalScore > 0 {
-			message += fmt.Sprintf(" (🌍 _%d_!)", ids[k].GlobalScore)
+		if m.GlobalScore > 0 {
+			message += fmt.Sprintf(" (🌍 _%d_!)", m.GlobalScore)
 		}
 		message += "\n"
 	}
