@@ -1,0 +1,8 @@
+{
+    "Debug": true,
+    "URL": "<string>",
+    "Cookie": "<string>",
+    "BotToken": "<string>",
+    "RoomID": "<string>"
+}
+

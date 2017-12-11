@@ -12,11 +12,11 @@ import (
 	"time"
 )
 
-const debug bool = false
 const timeLayout = "2006-01-02T15:04:05-0700"
 
 // Defines the struct for use with the JSON config file.
 type Configuration struct {
+	Debug    bool
 	URL      string
 	Cookie   string
 	BotToken string
@@ -172,12 +172,12 @@ func MainLoop(config Configuration, lastUpdate time.Time) time.Time {
 		}
 		message += "\n"
 	}
-	if debug {
+	if config.Debug {
 		fmt.Print(message)
 	}
 
 	// Send a message only if there was a Star gotten after the last Update
-	if lastStar.After(lastUpdate) || debug {
+	if lastStar.After(lastUpdate) || config.Debug {
 		_ = PostToSpark(config.BotToken, config.RoomID, message)
 	}
 	return time.Now()
