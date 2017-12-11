@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-const debug bool = true
+const debug bool = false
 const timeLayout = "2006-01-02T15:04:05-0700"
 
 // Defines the struct for use with the JSON config file.
