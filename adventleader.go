@@ -8,12 +8,11 @@ import (
 	"log"
 	"net/http"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 )
 
-const debug bool = true
+const debug bool = false
 const timeLayout = "2006-01-02T15:04:05-0700"
 
 // Defines the struct for use with the JSON config file.
@@ -130,11 +129,12 @@ func MainLoop(config Configuration, lastUpdate time.Time) time.Time {
 	// based on the local score of the Members
 	var keys []int
 	var lastStar time.Time
-	ids := make(map[int]Member)
+	ids := make(map[int]*Member)
 
 	for _, member := range leaderboard.Members {
+		member := member
 		keys = append(keys, member.LocalScore)
-		ids[member.LocalScore] = member
+		ids[member.LocalScore] = &member
 		memberStarTime := JSONtoNormalTime(member.LastStarTS)
 		if memberStarTime.After(lastStar) {
 			lastStar = memberStarTime
@@ -144,7 +144,7 @@ func MainLoop(config Configuration, lastUpdate time.Time) time.Time {
 	// Sort the slice of Ints in reverse order
 	sort.Sort(sort.Reverse(sort.IntSlice(keys)))
 
-	message := "### Leaderboard 🎄\n\n"
+	message := "### Leaderboard 🎄\n\n---\n"
 	// Create message with list of Members sorted by Local Score
 	for _, k := range keys {
 		var name string
@@ -153,11 +153,12 @@ func MainLoop(config Configuration, lastUpdate time.Time) time.Time {
 		} else {
 			name = ids[k].Name
 		}
-		message += " 1. **" + name + "**"
-		message += " 📈 _" + strconv.Itoa(ids[k].LocalScore) + "_"
-		message += " ⭐ _" + strconv.Itoa(ids[k].Stars) + "_"
+		if ids[k].Stars > 0 {
+			message += fmt.Sprintf(" 1. **%s**  📈 _%d_ ⭐ _%d_",
+				name, ids[k].LocalScore, ids[k].Stars)
+		}
 		if ids[k].GlobalScore > 0 {
-			message += " (🌍 _" + strconv.Itoa(ids[k].Stars) + "_!)"
+			message += fmt.Sprintf(" (🌍 _%d_!)", ids[k].GlobalScore)
 		}
 		message += "\n"
 	}
@@ -168,9 +169,8 @@ func MainLoop(config Configuration, lastUpdate time.Time) time.Time {
 	// Send a message only if there was a Star gotten after the last Update
 	if lastStar.After(lastUpdate) || debug {
 		_ = PostToSpark(config.BotToken, config.RoomID, message)
-		lastUpdate = time.Now()
 	}
-	return lastUpdate
+	return time.Now()
 }
 
 // Main method
