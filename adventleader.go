@@ -165,8 +165,8 @@ func MainLoop(config Configuration, lastUpdate time.Time) time.Time {
 			name = m.Name
 		}
 		if m.Stars > 0 {
-			message += fmt.Sprintf(" 1. **%s**  📈 _%d_ ⭐ _%d_",
-				name, m.LocalScore, m.Stars)
+			message += fmt.Sprintf(" 1. 📈 `%03d` ⭐ `%02d` – **%s** ",
+				m.LocalScore, m.Stars, name)
 		}
 		if m.GlobalScore > 0 {
 			message += fmt.Sprintf(" (🌍 _%d_!)", m.GlobalScore)
