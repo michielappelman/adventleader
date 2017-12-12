@@ -12,6 +12,9 @@ import (
 	"time"
 )
 
+var githash = "No Git hash provided"
+var buildstamp = "No build timestamp provided"
+
 const timeLayout = "2006-01-02T15:04:05-0700"
 
 // Defines the struct for use with the JSON config file.
@@ -186,6 +189,8 @@ func MainLoop(config Configuration, lastUpdate time.Time) time.Time {
 
 // Main method
 func main() {
+	fmt.Println("Git Commit Hash:", githash)
+	fmt.Println("UTC Build Time :", buildstamp)
 	file, err := ioutil.ReadFile("config.json")
 	if err != nil {
 		log.Fatal(err)
