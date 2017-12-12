@@ -154,7 +154,8 @@ func MainLoop(config Configuration, lastUpdate time.Time) time.Time {
 
 	sort.Sort(sort.Reverse(SortedMembers(members)))
 
-	message := "### Leaderboard 🎄\n\n---\n"
+	lb := strings.TrimSuffix(config.URL, ".json")
+	message := fmt.Sprintf("### [Leaderboard 🎄](%s)\n\n---\n", lb)
 	// Create message with list of Members sorted by Local Score
 	for _, m := range members {
 		var name string
