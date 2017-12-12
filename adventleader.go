@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
 	"sort"
 	"strings"
 	"time"
@@ -202,9 +205,32 @@ func main() {
 		log.Fatal(err)
 	}
 
+	scanner := bufio.NewScanner(os.Stdin)
+	msg := make(chan string, 1)
+	go func() {
+		for scanner.Scan() {
+			msg <- scanner.Text()
+		}
+	}()
+
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+
 	lastUpdate := time.Now()
+	veryOld := time.Date(2010, 1, 1, 0, 0, 0, 0, time.UTC)
+	ticker := time.NewTicker(5 * time.Minute)
+
 	for {
-		lastUpdate = MainLoop(config, lastUpdate)
-		time.Sleep(300 * time.Second)
+		select {
+		case <-msg:
+			fmt.Println("Update requested...")
+			lastUpdate = MainLoop(config, veryOld)
+		case <-ticker.C:
+			lastUpdate = MainLoop(config, lastUpdate)
+		case <-c:
+			ticker.Stop()
+			fmt.Println("Stopped bot.")
+			os.Exit(0)
+		}
 	}
 }
